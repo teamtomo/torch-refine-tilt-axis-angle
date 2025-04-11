@@ -7,7 +7,7 @@ from torch_fourier_slice import project_2d_to_1d
 from torch_affine_utils.transforms_2d import R
 
 
-def optimize_tilt_axis_angle(
+def refine_tilt_axis_angle(
         tilt_series: torch.Tensor,
         alignment_mask: torch.Tensor,
         initial_tilt_axis_angle: torch.Tensor | float,
