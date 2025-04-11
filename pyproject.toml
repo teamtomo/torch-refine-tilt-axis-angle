@@ -73,7 +73,7 @@ repository = "https://github.com/teamtomo/torch-refine-tilt-axis-angle"
 # https://docs.astral.sh/ruff
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py311"
 src = ["src"]
 
 # https://docs.astral.sh/ruff/rules
