@@ -16,13 +16,13 @@
 # torch-refine-tilt-axis-angle = { path = "../" }
 # ///
 import einops
+import napari
 import numpy as np
 import torch
-from torch_grid_utils import coordinate_grid, circle
-from torch_fourier_slice import project_3d_to_2d, backproject_2d_to_3d
-from torch_fourier_filter.bandpass import low_pass_filter
 from scipy.spatial.transform import Rotation as R
-import napari
+from torch_fourier_filter.bandpass import low_pass_filter
+from torch_fourier_slice import backproject_2d_to_3d, project_3d_to_2d
+from torch_grid_utils import circle, coordinate_grid
 
 from torch_refine_tilt_axis_angle import refine_tilt_axis_angle
 
@@ -52,12 +52,14 @@ def simulate_tilt_series(
 ) -> torch.Tensor:
     # construct rotation matrices
     in_plane_rotation_angles = einops.repeat(
-        np.array([tilt_axis_angle]), '1 -> b', b=len(tilt_angles)
+        np.array([tilt_axis_angle]), "1 -> b", b=len(tilt_angles)
     )
     euler_angles = einops.rearrange(
         [tilt_angles, in_plane_rotation_angles], pattern="angles b -> b angles"
     )
-    rotation_matrices = R.from_euler(seq='yz', angles=euler_angles, degrees=True).inv().as_matrix()
+    rotation_matrices = (
+        R.from_euler(seq="yz", angles=euler_angles, degrees=True).inv().as_matrix()
+    )
     rotation_matrices = torch.tensor(rotation_matrices).float()
 
     # make tilt series
@@ -72,18 +74,19 @@ def reconstruct_tomogram(
 ) -> torch.Tensor:
     # construct rotation matrices
     in_plane_rotation_angles = einops.repeat(
-        np.array([tilt_axis_angle]), '1 -> b', b=len(tilt_angles)
+        np.array([tilt_axis_angle]), "1 -> b", b=len(tilt_angles)
     )
     euler_angles = einops.rearrange(
         [tilt_angles, in_plane_rotation_angles], pattern="angles b -> b angles"
     )
-    rotation_matrices = R.from_euler(seq='yz', angles=euler_angles, degrees=True).inv().as_matrix()
+    rotation_matrices = (
+        R.from_euler(seq="yz", angles=euler_angles, degrees=True).inv().as_matrix()
+    )
     rotation_matrices = torch.tensor(rotation_matrices).float()
 
     # make tilt series
     reconstruction = backproject_2d_to_3d(
-        tilt_series,
-        rotation_matrices=rotation_matrices
+        tilt_series, rotation_matrices=rotation_matrices
     )
     return reconstruction
 
@@ -92,7 +95,11 @@ if __name__ == "__main__":
     # simulate volume with a few points in the xy plane
     volume = simulate_volume()
     lpf = low_pass_filter(
-        0.2, 0.05, volume.shape, rfft=True, fftshift=False,
+        0.2,
+        0.05,
+        volume.shape,
+        rfft=True,
+        fftshift=False,
     )
     volume = torch.fft.irfftn(torch.fft.rfftn(volume) * lpf)
 
@@ -104,10 +111,14 @@ if __name__ == "__main__":
 
     # simulate tilt series
     tilt_series = simulate_tilt_series(
-        volume, tilt_axis_angle, tilt_angles,
+        volume,
+        tilt_axis_angle,
+        tilt_angles,
     )
     # make reconstruction with initial (bad) guess
-    recon_before = reconstruct_tomogram(tilt_series, tilt_axis_angle_initial, tilt_angles)
+    recon_before = reconstruct_tomogram(
+        tilt_series, tilt_axis_angle_initial, tilt_angles
+    )
 
     # run torch-tiltxcorr and apply shifts
     optimized_tilt_axis_angle = refine_tilt_axis_angle(
@@ -117,7 +128,9 @@ if __name__ == "__main__":
     )
 
     # reconstruct after optimization
-    recon_after = reconstruct_tomogram(tilt_series, optimized_tilt_axis_angle, tilt_angles)
+    recon_after = reconstruct_tomogram(
+        tilt_series, optimized_tilt_axis_angle, tilt_angles
+    )
 
     # visiualize results
     viewer = napari.Viewer()
