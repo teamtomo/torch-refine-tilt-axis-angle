@@ -12,7 +12,7 @@ from torch_fourier_slice import project_2d_to_1d
 def refine_tilt_axis_angle(
     tilt_series: torch.Tensor,
     alignment_mask: torch.Tensor,
-    initial_tilt_axis_angle: torch.Tensor | float = 0.0,
+    tilt_axis_angle: torch.Tensor | float = 0.0,
     grid_points: int = 1,
     iterations: int = 3,
     return_single_angle: bool = True,
@@ -30,7 +30,7 @@ def refine_tilt_axis_angle(
     alignment_mask : torch.Tensor
         Mask of the same shape as tilt_series, indicating regions to consider
         for alignment. Preferably a circular mask with smooth falloff.
-    initial_tilt_axis_angle : float, default=0.0
+    tilt_axis_angle : float, default=0.0
         Initial guess for the tilt axis angle in degrees.
     grid_points : int, default=1
         Number of control points for the cubic B-spline grid. When > 1, allows for
@@ -73,7 +73,7 @@ def refine_tilt_axis_angle(
     tilt_axis_grid = CubicBSplineGrid1d(resolution=grid_points, n_channels=1)
     tilt_axis_grid.data = torch.tensor(
         [
-            initial_tilt_axis_angle,
+            tilt_axis_angle,
         ]
         * grid_points,
         dtype=torch.float32,
@@ -96,7 +96,7 @@ def refine_tilt_axis_angle(
 
         projections = torch.cat(
             [  # indexing with [[i]] does not drop the dimension
-                project_2d_to_1d(tilt_series[[i]], M[[i]]) for i in range(n_tilts)
+                project_2d_to_1d(tilt_series[i], M[[i]]) for i in range(n_tilts)
             ]
         )
         projections = projections - einops.reduce(

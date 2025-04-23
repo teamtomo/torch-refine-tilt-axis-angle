@@ -7,6 +7,8 @@ ci:
   autofix_commit_msg: "style(pre-commit.ci): auto fixes [...]"
   autoupdate_commit_msg: "ci(pre-commit.ci): autoupdate"
 
+exclude: '^examples/'
+
 repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.22
