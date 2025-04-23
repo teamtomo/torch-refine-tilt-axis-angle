@@ -1,4 +1,4 @@
-"""Tilt-axis angle optimization for tilt series using common lines in PyTorch"""
+"""Tilt-axis angle optimization using common lines in PyTorch."""
 
 from importlib.metadata import PackageNotFoundError, version
 
@@ -10,7 +10,6 @@ __author__ = "Marten Chaillet"
 __email__ = "martenchaillet@gmail.com"
 
 
-from torch_refine_tilt_axis_angle.refine_tilt_axis_angle import (
-    refine_tilt_axis_angle
-)
+from torch_refine_tilt_axis_angle.refine_tilt_axis_angle import refine_tilt_axis_angle
+
 __all__ = ["refine_tilt_axis_angle"]

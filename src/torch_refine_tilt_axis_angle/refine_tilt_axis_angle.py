@@ -1,19 +1,21 @@
+"""Refine an initial tilt axis angle."""
+
 import einops
 import torch
+from torch_affine_utils.transforms_2d import R
 
 # teamtomo torch functionality
 from torch_cubic_spline_grids import CubicBSplineGrid1d
 from torch_fourier_slice import project_2d_to_1d
-from torch_affine_utils.transforms_2d import R
 
 
 def refine_tilt_axis_angle(
-        tilt_series: torch.Tensor,
-        alignment_mask: torch.Tensor,
-        initial_tilt_axis_angle: torch.Tensor | float = 0.0,
-        grid_points: int = 1,
-        iterations: int = 3,
-        return_single_angle: bool = True,
+    tilt_series: torch.Tensor,
+    alignment_mask: torch.Tensor,
+    initial_tilt_axis_angle: torch.Tensor | float = 0.0,
+    grid_points: int = 1,
+    iterations: int = 3,
+    return_single_angle: bool = True,
 ) -> torch.Tensor:
     """Refine the tilt axis angle for electron tomography data.
 
@@ -68,18 +70,17 @@ def refine_tilt_axis_angle(
     mask_weights = mask_weights / mask_weights.max()  # normalise to 0 and 1
 
     # optimize tilt axis angle
-    tilt_axis_grid = CubicBSplineGrid1d(
-        resolution=grid_points, n_channels=1
-    )
+    tilt_axis_grid = CubicBSplineGrid1d(resolution=grid_points, n_channels=1)
     tilt_axis_grid.data = torch.tensor(
-        [initial_tilt_axis_angle,] * grid_points,
+        [
+            initial_tilt_axis_angle,
+        ]
+        * grid_points,
         dtype=torch.float32,
         device=device,
     )
     tilt_axis_grid.to(device)
-    interpolation_points = torch.linspace(
-        0, 1, n_tilts, device=device
-    )
+    interpolation_points = torch.linspace(0, 1, n_tilts, device=device)
 
     lbfgs = torch.optim.LBFGS(
         tilt_axis_grid.parameters(),
@@ -89,14 +90,13 @@ def refine_tilt_axis_angle(
     def closure() -> torch.Tensor:
         # The common line is the projection perpendicular to the
         # tilt-axis, hence add 90 degrees to project along the x-axis
-        pred_tilt_axis_angles = tilt_axis_grid(interpolation_points) + 90.
+        pred_tilt_axis_angles = tilt_axis_grid(interpolation_points) + 90.0
         M = R(pred_tilt_axis_angles, yx=False)
         M = M[:, :2, :2]  # we only need the rotation matrix
 
         projections = torch.cat(
             [  # indexing with [[i]] does not drop the dimension
-                project_2d_to_1d(tilt_series[[i]], M[[i]])
-                for i in range(n_tilts)
+                project_2d_to_1d(tilt_series[[i]], M[[i]]) for i in range(n_tilts)
             ]
         )
         projections = projections - einops.reduce(
