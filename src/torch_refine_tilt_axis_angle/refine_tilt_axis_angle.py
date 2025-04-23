@@ -10,10 +10,11 @@ from torch_affine_utils.transforms_2d import R
 def refine_tilt_axis_angle(
         tilt_series: torch.Tensor,
         alignment_mask: torch.Tensor,
-        initial_tilt_axis_angle: float = 0.0,
+        initial_tilt_axis_angle: torch.Tensor | float = 0.0,
         grid_points: int = 1,
         iterations: int = 3,
-) -> torch.Tensor | float:
+        return_single_angle: bool = True,
+) -> torch.Tensor:
     """Refine the tilt axis angle for electron tomography data.
 
     Uses common line projections and LBFGS optimization to find the optimal
@@ -34,6 +35,9 @@ def refine_tilt_axis_angle(
         non-constant tilt axis angle across the tilt series.
     iterations : int, default=3
         Number of LBFGS optimization iterations to perform.
+    return_single_angle : bool, default=True
+        Return a single value for the tilt axis angle instead of a tensor
+        with one value per tilt.
 
     Returns
     -------
@@ -90,7 +94,7 @@ def refine_tilt_axis_angle(
         M = M[:, :2, :2]  # we only need the rotation matrix
 
         projections = torch.cat(
-            [
+            [  # indexing with [[i]] does not drop the dimension
                 project_2d_to_1d(tilt_series[[i]], M[[i]])
                 for i in range(n_tilts)
             ]
@@ -100,7 +104,6 @@ def refine_tilt_axis_angle(
         )
         projections = projections / torch.std(projections, dim=(-1), keepdim=True)
         projections = projections * mask_weights  # weight the common lines
-
         lbfgs.zero_grad()
         squared_differences = (
             projections - einops.rearrange(projections, "b d -> b 1 d")
@@ -112,9 +115,9 @@ def refine_tilt_axis_angle(
     for _ in range(iterations):
         lbfgs.step(closure)
 
-    tilt_axis_angles = tilt_axis_grid(interpolation_points)
+    tilt_axis_angles = tilt_axis_grid(interpolation_points).detach()
 
-    if grid_points == 1:
-        return float(torch.mean(tilt_axis_angles))
+    if return_single_angle:
+        return torch.mean(tilt_axis_angles)
     else:
-        return tilt_axis_angles.detach()
+        return tilt_axis_angles
