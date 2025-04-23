@@ -52,7 +52,7 @@ def test_refine_tilt_axis_angle_with_single_grid_point(sample_data):
         result = refine_tilt_axis_angle(
             tilt_series=tilt_series,
             alignment_mask=mask,
-            initial_tilt_axis_angle=initial_angle,
+            tilt_axis_angle=initial_angle,
             grid_points=1,
             iterations=2,
         )
@@ -73,7 +73,7 @@ def test_refine_tilt_axis_angle_with_multiple_grid_points(sample_data):
         result = refine_tilt_axis_angle(
             tilt_series=tilt_series,
             alignment_mask=mask,
-            initial_tilt_axis_angle=initial_angle,
+            tilt_axis_angle=initial_angle,
             iterations=2,
             return_single_angle=False,
         )
@@ -98,7 +98,7 @@ def test_refine_tilt_axis_angle_optimization_iterations(sample_data):
         refine_tilt_axis_angle(
             tilt_series=tilt_series,
             alignment_mask=mask,
-            initial_tilt_axis_angle=initial_angle,
+            tilt_axis_angle=initial_angle,
             grid_points=3,
             iterations=5,
         )
