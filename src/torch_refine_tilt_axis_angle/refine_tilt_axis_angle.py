@@ -93,6 +93,7 @@ def refine_tilt_axis_angle(
         pred_tilt_axis_angles = tilt_axis_grid(interpolation_points) + 90.0
         M = R(pred_tilt_axis_angles, yx=False)
         M = M[:, :2, :2]  # we only need the rotation matrix
+        M = M.to(device)
 
         projections = torch.cat(
             [  # indexing with [[i]] does not drop the dimension
