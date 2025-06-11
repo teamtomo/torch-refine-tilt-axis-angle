@@ -107,7 +107,6 @@ if __name__ == "__main__":
     tilt_axis_angle = 85
     tilt_axis_angle_initial = 70
     tilt_angles = np.linspace(-60, 60, num=61, endpoint=True)
-    alignment_mask = circle(56, (128, 128), smoothing_radius=8)
 
     # simulate tilt series
     tilt_series = simulate_tilt_series(
@@ -123,7 +122,7 @@ if __name__ == "__main__":
     # run torch-tiltxcorr and apply shifts
     optimized_tilt_axis_angle = refine_tilt_axis_angle(
         tilt_series=tilt_series,
-        alignment_mask=torch.ones(tuple(tilt_series.shape[-2:])),
+        tilt_angles=tilt_angles,
         tilt_axis_angle=tilt_axis_angle_initial,
     )
 
