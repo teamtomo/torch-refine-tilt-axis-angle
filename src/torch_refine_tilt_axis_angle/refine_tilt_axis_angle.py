@@ -7,11 +7,11 @@ from torch_affine_utils.transforms_2d import R
 # teamtomo torch functionality
 from torch_cubic_spline_grids import CubicBSplineGrid1d
 from torch_fourier_slice import project_2d_to_1d
+from torch_grid_utils import circle
 
 
 def refine_tilt_axis_angle(
     tilt_series: torch.Tensor,
-    alignment_mask: torch.Tensor,
     tilt_axis_angle: torch.Tensor | float = 0.0,
     grid_points: int = 1,
     iterations: int = 3,
@@ -27,9 +27,6 @@ def refine_tilt_axis_angle(
     ----------
     tilt_series : torch.Tensor
         Tensor containing the tilt series images with shape [n_tilts, height, width].
-    alignment_mask : torch.Tensor
-        Mask of the same shape as tilt_series, indicating regions to consider
-        for alignment. Preferably a circular mask with smooth falloff.
     tilt_axis_angle : float, default=0.0
         Initial guess for the tilt axis angle in degrees.
     grid_points : int, default=1
@@ -60,6 +57,14 @@ def refine_tilt_axis_angle(
     """
     n_tilts = tilt_series.shape[0]
     device = tilt_series.device
+
+    # use a spherical real-space alignment mask, quick way to get around #4
+    alignment_mask = circle(
+        radius=size // 3,
+        smoothing_radius=size // 6,
+        image_shape=tilt_series.shape[-2:],
+        device=device,
+    )
     tilt_series = tilt_series * alignment_mask
 
     # generate a weighting for the common line ROI by projecting the mask
