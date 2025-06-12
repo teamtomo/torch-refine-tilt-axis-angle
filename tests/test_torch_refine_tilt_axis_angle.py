@@ -14,15 +14,7 @@ def sample_data():
     # Create a small tilt series (5 images of 20x20 pixels)
     tilt_series = torch.rand(5, 20, 20, device=device)
 
-    # Create a simple circular mask
-    y, x = torch.meshgrid(
-        torch.linspace(-1, 1, 20, device=device),
-        torch.linspace(-1, 1, 20, device=device),
-        indexing="ij",
-    )
-    mask = ((x**2 + y**2) < 0.8**2).float()
-
-    return {"tilt_series": tilt_series, "mask": mask, "device": device}
+    return {"tilt_series": tilt_series, "device": device}
 
 
 def test_refine_tilt_axis_angle_default_parameters(sample_data):
@@ -30,10 +22,9 @@ def test_refine_tilt_axis_angle_default_parameters(sample_data):
     with patch("torch.optim.LBFGS.step"):
         # Setup
         tilt_series = sample_data["tilt_series"]
-        mask = sample_data["mask"]
 
         # Call the function with default parameters
-        result = refine_tilt_axis_angle(tilt_series=tilt_series, alignment_mask=mask)
+        result = refine_tilt_axis_angle(tilt_series=tilt_series)
 
         # Assertions
         assert isinstance(result, torch.Tensor)
@@ -45,13 +36,11 @@ def test_refine_tilt_axis_angle_with_single_grid_point(sample_data):
     with patch("torch.optim.LBFGS.step"):
         # Setup
         tilt_series = sample_data["tilt_series"]
-        mask = sample_data["mask"]
         initial_angle = 45.0
 
         # Call the function
         result = refine_tilt_axis_angle(
             tilt_series=tilt_series,
-            alignment_mask=mask,
             tilt_axis_angle=initial_angle,
             grid_points=1,
             iterations=2,
@@ -66,13 +55,11 @@ def test_refine_tilt_axis_angle_with_multiple_grid_points(sample_data):
     with patch("torch.optim.LBFGS.step"):
         # Setup
         tilt_series = sample_data["tilt_series"]
-        mask = sample_data["mask"]
         initial_angle = 45.0
 
         # Call the function
         result = refine_tilt_axis_angle(
             tilt_series=tilt_series,
-            alignment_mask=mask,
             tilt_axis_angle=initial_angle,
             iterations=2,
             return_single_angle=False,
@@ -90,14 +77,12 @@ def test_refine_tilt_axis_angle_optimization_iterations(sample_data):
     """Test that the number of optimization iterations are executed."""
     # Setup
     tilt_series = sample_data["tilt_series"]
-    mask = sample_data["mask"]
     initial_angle = 45.0
 
     # Call the function with different iteration counts
     with patch("torch.optim.LBFGS.step") as mock_step:
         refine_tilt_axis_angle(
             tilt_series=tilt_series,
-            alignment_mask=mask,
             tilt_axis_angle=initial_angle,
             grid_points=3,
             iterations=5,
