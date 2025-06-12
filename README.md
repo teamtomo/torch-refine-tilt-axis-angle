@@ -34,13 +34,9 @@ tilt_series = torch.randn(61, 512, 512)
 # This can be the value from an MDOC file.
 initial_tilt_axis_angle = 50.0
 
-# Define a circular mask that removes some noise and help the optimization target.
-alignment_mask = circle(236, (512, 512), smoothing_radius=20)
-
 # Run tilt axis angle refinement.
 new_tilt_axis_angle = refine_tilt_axis_angle(
     tilt_series=tilt_series,
-    alignment_mask=alignment_mask,
     tilt_axis_angle=initial_tilt_axis_angle,
     # grid_points=1,  # optionally increase the spline grid points (default 1)
     # return_single_angle=False,  # optionally write out an angle for each image 
