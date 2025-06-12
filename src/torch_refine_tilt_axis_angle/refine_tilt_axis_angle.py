@@ -55,14 +55,15 @@ def refine_tilt_axis_angle(
     Common line projections are normalized and weighted according to the
     projected mask to emphasize regions of interest.
     """
-    n_tilts = tilt_series.shape[0]
+    n_tilts, h, w = tilt_series.shape
     device = tilt_series.device
+    size = min(h, w)
 
     # use a spherical real-space alignment mask, quick way to get around #4
     alignment_mask = circle(
         radius=size // 3,
         smoothing_radius=size // 6,
-        image_shape=tilt_series.shape[-2:],
+        image_shape=(h, w),
         device=device,
     )
     tilt_series = tilt_series * alignment_mask
