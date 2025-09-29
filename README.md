@@ -23,7 +23,6 @@ pip install torch-refine-tilt-axis-angle
 ```python
 import torch
 from torch_refine_tilt_axis_angle import refine_tilt_axis_angle
-from torch_grid_utils import circle
 
 # Load or create your tilt series
 # tilt_series shape: (batch, height, width) - batch is number of tilt images
