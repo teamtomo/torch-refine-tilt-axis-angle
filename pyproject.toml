@@ -37,8 +37,8 @@ classifiers = [
 dependencies = [
     "torch",
     "einops",
+    "scipy",
     "torch-fourier-slice",
-    "torch-cubic-spline-grids",
     "torch-affine-utils",
     "torch-grid-utils",
 ]
