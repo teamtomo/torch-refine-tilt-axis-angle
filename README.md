@@ -10,7 +10,7 @@ Tilt-axis angle optimization for tilt series using common lines.
 
 ## Overview
 
-torch-refine-tilt-axis-angle provides an implementation for finding the in plane rotation for a tilt-series that aligns the tilt axis with the y-axis. This is done by extracting lines from the 2D Fourier transform of the tilt-series images and minimizing the mean squared error between them, i.e. the common lines. It makes use of the pytorch LBFGS optimizer to find the minimum.
+torch-refine-tilt-axis-angle provides an implementation for finding the in plane rotation for a tilt-series that aligns the tilt axis with the y-axis. This is done by extracting lines from the 2D Fourier transform of the tilt-series images and minimizing the mean squared error between them, i.e. the common lines. It makes use of scipy's Brent's method (bounded) to find the minimum.
 
 ## Installation
 
@@ -37,8 +37,8 @@ initial_tilt_axis_angle = 50.0
 new_tilt_axis_angle = refine_tilt_axis_angle(
     tilt_series=tilt_series,
     tilt_axis_angle=initial_tilt_axis_angle,
-    # grid_points=1,  # optionally increase the spline grid points (default 1)
-    # return_single_angle=False,  # optionally write out an angle for each image 
+    search_range=10.0,  # search range around initial angle in degrees (default 10.0)
+    max_iter=20,  # maximum iterations for optimizer (default 20)
 )
 ```
 
