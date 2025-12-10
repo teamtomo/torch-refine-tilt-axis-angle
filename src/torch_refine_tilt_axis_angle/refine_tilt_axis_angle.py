@@ -14,7 +14,7 @@ def refine_tilt_axis_angle(
     tilt_series: torch.Tensor,
     tilt_axis_angle: float = 0.0,
     search_range: float = 10.0,
-    max_iter: int = 10,
+    max_iter: int = 20,
 ) -> float:
     """Refine the tilt axis angle for electron tomography data.
 
